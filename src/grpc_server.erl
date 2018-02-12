@@ -55,6 +55,12 @@ start(Name, Transport, Port, Services, Options) ->
                 ?MODULE, 
                 #{auth_fun => AuthFun,
                   services => Services}}]}]),
+    DispatchWeb = cowboy_router:compile([
+      {'_', [
+        {"/:service/:method", erws_handler, #{auth_fun => AuthFun,
+                  services => Services}}
+      ]}
+    ]),
     ProtocolOpts = #{env => #{dispatch => Dispatch},
                      %% inactivity_timeout => infinity,
                      stream_handlers => [grpc_stream_handler,
@@ -66,7 +72,10 @@ start(Name, Transport, Port, Services, Options) ->
         ssl ->
             TransportOpts = [{port, Port} |
                              proplists:get_value(transport_options, Options, [])],
-            cowboy:start_tls(Name, TransportOpts, ProtocolOpts)
+            cowboy:start_tls(Name, TransportOpts, ProtocolOpts);
+	web ->
+	    cowboy:start_http(Name, 100, [{port, Port}],
+              [{env, [{dispatch, DispatchWeb}]}])
     end.
 
 -spec stop(Name::term()) -> ok.
