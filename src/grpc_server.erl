@@ -79,7 +79,7 @@ start(Name, Transport, Port, Services, Options) ->
                              proplists:get_value(transport_options, Options, [])],
             cowboy:start_tls(Name, TransportOpts, ProtocolOpts);
 	web ->
-	    cowboy:start_http(Name, 100, [{port, Port}],ProtocolOptsWeb)
+	    cowboy:start_clear(Name, [{port, Port}],ProtocolOptsWeb)
     end.
 
 -spec stop(Name::term()) -> ok.
