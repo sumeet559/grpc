@@ -66,6 +66,11 @@ start(Name, Transport, Port, Services, Options) ->
                      stream_handlers => [grpc_stream_handler,
                                          cowboy_stream_h],
                      middlewares => Middlewares},
+    ProtocolOptsWeb = #{env => #{dispatch => DispatchWeb},
+                     %% inactivity_timeout => infinity,
+                     stream_handlers => [grpc_stream_handler,
+                                         cowboy_stream_h],
+                     middlewares => Middlewares},
     case Transport of
         tcp ->
             cowboy:start_clear(Name, [{port, Port}], ProtocolOpts);
@@ -74,8 +79,7 @@ start(Name, Transport, Port, Services, Options) ->
                              proplists:get_value(transport_options, Options, [])],
             cowboy:start_tls(Name, TransportOpts, ProtocolOpts);
 	web ->
-	    cowboy:start_http(Name, 100, [{port, Port}],
-              [{env, [{dispatch, DispatchWeb}]}])
+	    cowboy:start_http(Name, 100, [{port, Port}],ProtocolOptsWeb)
     end.
 
 -spec stop(Name::term()) -> ok.
